@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShopEase - Your Online Shopping Destination</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-shopping-bag text-indigo-600 text-2xl mr-2"></i>
+                        <span class="text-xl font-bold text-indigo-600">ShopEase</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#" class="border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" onclick="showHome()">
+                            Home
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" onclick="showProducts()">
+                            Products
+                        </a>
+                        <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium" onclick="showAbout()">
+                            About
+                        </a>
+                    </div>
+                </div>
+                <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                    <button class="relative p-1 text-gray-400 hover:text-gray-500 focus:outline-none" onclick="toggleCart()">
+                        <span class="sr-only">Cart</span>
+                        <i class="fas fa-shopping-cart text-xl"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+                <div class="-mr-2 flex items-center sm:hidden">
+                    <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500" onclick="toggleMobileMenu()">
+                        <span class="sr-only">Open main menu</span>
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile menu -->
+        <div id="mobile-menu" class="sm:hidden hidden">
+            <div class="pt-2 pb-3 space-y-1">
+                <a href="#" class="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" onclick="showHome()">Home</a>
+                <a href="#" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" onclick="showProducts()">Products</a>
+                <a href="#" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" onclick="showAbout()">About</a>
+                <a href="#" class="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium" onclick="toggleCart()">Cart</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Side Cart -->
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full sm:w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex justify-between items-center p-4 border-b">
+                <h2 class="text-lg font-medium">Your Cart</h2>
+                <button onclick="toggleCart()" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-4">
+                <!-- Cart items will be added here dynamically -->
+                <div class="text-center text-gray-500 py-10">
+                    <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                    <p>Your cart is empty</p>
+                </div>
+            </div>
+            <div class="border-t p-4">
+                <div class="flex justify-between mb-2">
+                    <span class="font-medium">Subtotal:</span>
+                    <span id="cart-subtotal">$0.00</span>
+                </div>
+                <div class="flex justify-between mb-4">
+                    <span class="font-medium">Shipping:</span>
+                    <span id="cart-shipping">$5.00</span>
+                </div>
+                <div class="flex justify-between text-lg font-bold mb-4">
+                    <span>Total:</span>
+                    <span id="cart-total">$5.00</span>
+                </div>
+                <button onclick="checkout()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">
+                    Checkout
+                </button>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 z-40" onclick="toggleCart()"></div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Home Page -->
+        <div id="home-page">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="relative h-64 sm:h-96">
+                    <div class="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-600 opacity-90"></div>
+                    <div class="relative h-full flex flex-col justify-center items-center text-center px-4 sm:px-6 lg:px-8">
+                        <h1 class="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-4">Welcome to ShopEase</h1>
+                        <p class="text-lg sm:text-xl text-indigo-100 mb-8 max-w-3xl">Discover amazing products at unbeatable prices. Shop with confidence and ease.</p>
+                        <button onclick="showProducts()" class="bg-white text-indigo-600 font-medium py-2 px-6 rounded-md hover:bg-gray-100 transition duration-300">
+                            Shop Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-indigo-600 mb-4">
+                        <i class="fas fa-truck text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Fast Shipping</h3>
+                    <p class="text-gray-600">Get your products delivered quickly with our reliable shipping partners.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-indigo-600 mb-4">
+                        <i class="fas fa-shield-alt text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Secure Payments</h3>
+                    <p class="text-gray-600">Your payment information is processed securely with encryption.</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition duration-300">
+                    <div class="text-indigo-600 mb-4">
+                        <i class="fas fa-headset text-3xl"></i>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">24/7 Support</h3>
+                    <p class="text-gray-600">Our customer service team is always ready to assist you.</p>
+                </div>
+            </div>
+
+            <h2 class="text-2xl font-bold mb-6">Featured Products</h2>
+            <div id="featured-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- Featured products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Products Page -->
+        <div id="products-page" class="hidden">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
+                <h1 class="text-2xl font-bold mb-4 sm:mb-0">All Products</h1>
+                <div class="w-full sm:w-auto">
+                    <label for="category-filter" class="sr-only">Category</label>
+                    <select id="category-filter" onchange="filterProducts()" class="block w-full sm:w-48 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 pl-3 pr-10 text-base">
+                        <option value="all">All Categories</option>
+                        <option value="electronics">Electronics</option>
+                        <option value="clothing">Clothing</option>
+                        <option value="home">Home & Kitchen</option>
+                        <option value="books">Books</option>
+                    </select>
+                </div>
+            </div>
+            <div id="all-products" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- All products will be loaded here -->
+            </div>
+        </div>
+
+        <!-- About Page -->
+        <div id="about-page" class="hidden">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden mb-8">
+                <div class="p-6 sm:p-8">
+                    <h1 class="text-2xl font-bold mb-6">About ShopEase</h1>
+                    <div class="prose max-w-none">
+                        <p class="mb-4">Welcome to ShopEase, your premier online shopping destination. Founded in 2023, we're committed to providing high-quality products at competitive prices with exceptional customer service.</p>
+                        
+                        <h2 class="text-xl font-semibold mt-6 mb-3">Our Mission</h2>
+                        <p class="mb-4">To make online shopping simple, enjoyable, and accessible to everyone. We carefully curate our product selection to ensure you only find the best items for your needs.</p>
+                        
+                        <h2 class="text-xl font-semibold mt-6 mb-3">Our Values</h2>
+                        <ul class="list-disc pl-5 mb-4 space-y-2">
+                            <li><strong>Customer First:</strong> Your satisfaction is our top priority.</li>
+                            <li><strong>Quality Assurance:</strong> We thoroughly vet all products before listing.</li>
+                            <li><strong>Transparency:</strong> No hidden fees or surprises at checkout.</li>
+                            <li><strong>Innovation:</strong> Continuously improving our platform for a better shopping experience.</li>
+                        </ul>
+                        
+                        <h2 class="text-xl font-semibold mt-6 mb-3">Meet the Team</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <div class="w-24 h-24 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-medium">Sarah Johnson</h3>
+                                <p class="text-sm text-gray-600">CEO & Founder</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <div class="w-24 h-24 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-medium">Michael Chen</h3>
+                                <p class="text-sm text-gray-600">CTO</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <div class="w-24 h-24 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-medium">Emily Rodriguez</h3>
+                                <p class="text-sm text-gray-600">Marketing Director</p>
+                            </div>
+                            <div class="bg-gray-50 p-4 rounded-lg text-center">
+                                <div class="w-24 h-24 mx-auto mb-3 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-user text-3xl text-indigo-600"></i>
+                                </div>
+                                <h3 class="font-medium">David Kim</h3>
+                                <p class="text-sm text-gray-600">Customer Support</p>
+                            </div>
+                        </div>
+                        
+                        <h2 class="text-xl font-semibold mt-6 mb-3">Contact Us</h2>
+                        <p class="mb-2"><i class="fas fa-envelope mr-2 text-indigo-600"></i> support@shopease.com</p>
+                        <p class="mb-2"><i class="fas fa-phone mr-2 text-indigo-600"></i> (555) 123-4567</p>
+                        <p><i class="fas fa-map-marker-alt mr-2 text-indigo-600"></i> 123 Commerce St, Digital City, DC 10001</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Checkout Page (hidden by default) -->
+        <div id="checkout-page" class="hidden max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="p-6 sm:p-8">
+                    <h1 class="text-2xl font-bold mb-6">Checkout</h1>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-lg font-medium mb-4 border-b pb-2">Shipping Information</h2>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                            <div>
+                                <label for="first-name" class="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+                                <input type="text" id="first-name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                            </div>
+                            <div>
+                                <label for="last-name" class="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+                                <input type="text" id="last-name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                            </div>
+                        </div>
+                        <div class="mb-4">
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <input type="text" id="address" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <label for="city" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                <input type="text" id="city" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                            </div>
+                            <div>
+                                <label for="state" class="block text-sm font-medium text-gray-700 mb-1">State</label>
+                                <input type="text" id="state" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                            </div>
+                            <div>
+                                <label for="zip" class="block text-sm font-medium text-gray-700 mb-1">ZIP Code</label>
+                                <input type="text" id="zip" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                            </div>
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input type="email" id="email" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h2 class="text-lg font-medium mb-4 border-b pb-2">Payment Method</h2>
+                        <div class="space-y-4">
+                            <div class="payment-method border rounded-md p-4 cursor-pointer" onclick="selectPayment('credit')">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" id="credit-card" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300" checked>
+                                    <label for="credit-card" class="ml-3 block text-sm font-medium text-gray-700">Credit Card</label>
+                                </div>
+                                <div id="credit-card-fields" class="mt-4 pl-7">
+                                    <div class="mb-4">
+                                        <label for="card-number" class="block text-sm font-medium text-gray-700 mb-1">Card Number</label>
+                                        <input type="text" id="card-number" placeholder="1234 5678 9012 3456" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-4 mb-4">
+                                        <div>
+                                            <label for="exp-date" class="block text-sm font-medium text-gray-700 mb-1">Expiration Date</label>
+                                            <input type="text" id="exp-date" placeholder="MM/YY" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                                        </div>
+                                        <div>
+                                            <label for="cvv" class="block text-sm font-medium text-gray-700 mb-1">CVV</label>
+                                            <input type="text" id="cvv" placeholder="123" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label for="card-name" class="block text-sm font-medium text-gray-700 mb-1">Name on Card</label>
+                                        <input type="text" id="card-name" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 py-2 px-3 border">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method border rounded-md p-4 cursor-pointer" onclick="selectPayment('paypal')">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" id="paypal" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                    <label for="paypal" class="ml-3 block text-sm font-medium text-gray-700">PayPal</label>
+                                </div>
+                            </div>
+                            
+                            <div class="payment-method border rounded-md p-4 cursor-pointer" onclick="selectPayment('bank')">
+                                <div class="flex items-center">
+                                    <input type="radio" name="payment" id="bank-transfer" class="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300">
+                                    <label for="bank-transfer" class="ml-3 block text-sm font-medium text-gray-700">Bank Transfer</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="border-t pt-6">
+                        <h2 class="text-lg font-medium mb-4">Order Summary</h2>
+                        <div id="checkout-items">
+                            <!-- Checkout items will be loaded here -->
+                        </div>
+                        <div class="space-y-2 mt-4">
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span id="checkout-subtotal" class="font-medium">$0.00</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-600">Shipping</span>
+                                <span id="checkout-shipping" class="font-medium">$5.00</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold border-t pt-2 mt-2">
+                                <span>Total</span>
+                                <span id="checkout-total" class="text-indigo-600">$5.00</span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-6">
+                            <button onclick="processPayment()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300 flex items-center justify-center">
+                                <span id="pay-button-text">Place Order</span>
+                                <i id="payment-spinner" class="fas fa-circle-notch loading-spinner ml-2 hidden"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Confirmation (hidden by default) -->
+        <div id="order-confirmation" class="hidden max-w-md mx-auto text-center py-12">
+            <div class="bg-white rounded-lg shadow-md overflow-hidden p-8">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 mb-4">
+                    <i class="fas fa-check text-green-600"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-900 mb-2">Order Confirmed!</h2>
+                <p class="text-gray-600 mb-6">Thank you for your purchase. Your order has been placed successfully.</p>
+                <div class="bg-gray-50 p-4 rounded-md mb-6">
+                    <p class="text-sm text-gray-500">Order Number</p>
+                    <p class="font-medium">#<span id="order-number">123456</span></p>
+                </div>
+                <p class="text-gray-600 mb-6">A confirmation email has been sent to <span id="confirmation-email" class="font-medium">your@email.com</span></p>
+                <button onclick="showHome()" class="w-full bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition duration-300">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-medium mb-4">ShopEase</h3>
+                    <p class="text-gray-400">Making online shopping simple and enjoyable since 2023.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4">Shop</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white" onclick="showProducts()">All Products</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white" onclick="filterProducts('electronics')">Electronics</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white" onclick="filterProducts('clothing')">Clothing</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white" onclick="filterProducts('home')">Home & Kitchen</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4">Help</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white">FAQs</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Shipping Policy</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Returns & Refunds</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white">Contact Us</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium mb-4">Connect</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-pinterest"></i></a>
+                    </div>
+                    <div class="mt-4">
+                        <p class="text-gray-400">Subscribe to our newsletter</p>
+                        <div class="mt-2 flex">
+                            <input type="email" placeholder="Your email" class="bg-gray-700 text-white px-3 py-2 rounded-l-md w-full focus:outline-none">
+                            <button class="bg-indigo-600 text-white px-4 py-2 rounded-r-md hover:bg-indigo-700">Join</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
+                <p class="text-gray-400 text-sm">© 2023 ShopEase. All rights reserved.</p>
+                <div class="flex space-x-6 mt-4 md:mt-0">
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Privacy Policy</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Terms of Service</a>
+                    <a href="#" class="text-gray-400 hover:text-white text-sm">Cookies</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Product data
+        const products = [
+            {
+                id: 1,
+                name: "Wireless Headphones",
+                price: 99.99,
+                image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8M3x8aGVhZHBob25lc3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+                category: "electronics",
+                featured: true,
+                description: "Premium wireless headphones with noise cancellation and 30-hour battery life."
+            },
+            {
+                id: 2,
+                name: "Smart Watch",
+                price: 199.99,
+                image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8c21hcnQlMjB3YXRjaHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+                category: "electronics",
+                featured: true,
+                description: "Feature-packed smartwatch with fitness tracking and notifications."
+            },
+            {
+                id: 3,
+                name: "Cotton T-Shirt",
+                price: 24.99,
+                image: "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dHNoaXJ0fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+                category: "clothing",
+                featured: true,
+                description: "Comfortable 100% cotton t-shirt available in multiple colors."
+            },
+            {
+                id: 4,
+                name: "Leather Wallet",
+                price: 49.99,
+                image: "https://images.unsplash.com/photo-1600857544200-b2f666a9a1ca?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8d2FsbGV0fGVufDB8fDB8fHww&auto=format&fit=crop&w=500&q=60",
+                category: "accessories",
+                featured: false,
+                description: "Genuine leather wallet with multiple card slots and cash compartment."
+            },
+            {
+                id: 5,
+                name: "Blender",
+                price: 79.99,
+                image: "https://images.unsplash.com/photo-1563213126-a4273a1a5f0a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8YmxlbmRlcnxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+                category: "home",
+                featured: false,
+                description: "High-powered blender for smoothies, soups, and more."
+            },
+            {
+                id: 6,
+                name: "Running Shoes",
+                price: 89.99,
+                image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8c2hvZXN8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+                category: "clothing",
+                featured: false,
+                description: "Lightweight running shoes with cushioned soles for maximum comfort."
+            },
+            {
+                id: 7,
+                name: "Coffee Maker",
+                price: 129.99,
+                image: "https://images.unsplash.com/photo-1556911463-12d5a4a6b1b3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8Y29mZmVlJTIwbWFrZXJ8ZW58MHx8MHx8fDA%3D&auto=format&fit=crop&w=500&q=60",
+                category: "home",
+                featured: true,
+                description: "Programmable coffee maker with thermal carafe and timer."
+            },
+            {
+                id: 8,
+                name: "Best-Selling Novel",
+                price: 14.99,
+                image: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8OHx8Ym9va3xlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60",
+                category: "books",
+                featured: false,
+                description: "The latest best-selling novel from a renowned author."
+            }
+        ];
+
+        // Shopping cart
+        let cart = [];
+        let cartOpen = false;
+
+        // DOM elements
+        const homePage = document.getElementById('home-page');
+        const productsPage = document.getElementById('products-page');
+        const aboutPage = document.getElementById('about-page');
+        const checkoutPage = document.getElementById('checkout-page');
+        const orderConfirmation = document.getElementById('order-confirmation');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const featuredProductsContainer = document.getElementById('featured-products');
+        const allProductsContainer = document.getElementById('all-products');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartCount = document.getElementById('cart-count');
+        const cartSubtotal = document.getElementById('cart-subtotal');
+        const cartShipping = document.getElementById('cart-shipping');
+        const cartTotal = document.getElementById('cart-total');
+        const checkoutItemsContainer = document.getElementById('checkout-items');
+        const checkoutSubtotal = document.getElementById('checkout-subtotal');
+        const checkoutShipping = document.getElementById('checkout-shipping');
+        const checkoutTotal = document.getElementById('checkout-total');
+        const paymentSpinner = document.getElementById('payment-spinner');
+        const payButtonText = document.getElementById('pay-button-text');
+        const orderNumber = document.getElementById('order-number');
+        const confirmationEmail = document.getElementById('confirmation-email');
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            loadFeaturedProducts();
+            loadAllProducts();
+            updateCartCount();
+        });
+
+        // Load featured products
+        function loadFeaturedProducts() {
+            featuredProductsContainer.innerHTML = '';
+            const featuredProducts = products.filter(product => product.featured);
+            
+            featuredProducts.forEach(product => {
+                const productCard = createProductCard(product);
+                featuredProductsContainer.appendChild(productCard);
+            });
+        }
+
+        // Load all products
+        function loadAllProducts() {
+            allProductsContainer.innerHTML = '';
+            
+            products.forEach(product => {
+                const productCard = createProductCard(product);
+                allProductsContainer.appendChild(productCard);
+            });
+        }
+
+        // Create product card HTML
+        function createProductCard(product) {
+            const card = document.createElement('div');
+            card.className = 'product-card bg-white rounded-lg shadow-md overflow-hidden';
+            
+            card.innerHTML = `
+                <div class="relative pb-2/3 h-48">
+                    <img src="${product.image}" alt="${product.name}" class="absolute h-full w-full object-cover">
+                </div>
+                <div class="p-4">
+                    <h3 class="text-lg font-medium mb-1">${product.name}</h3>
+                    <p class="text-gray-600 text-sm mb-2">${product.description}</p>
+                    <div class="flex justify-between items-center mt-4">
+                        <span class="text-lg font-bold text-indigo-600">$${product.price.toFixed(2)}</span>
+                        <button onclick="addToCart(${product.id})" class="bg-indigo-600 text-white py-1 px-3 rounded-md hover:bg-indigo-700 transition duration-300 text-sm">
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // Filter products by category
+        function filterProducts(category = null) {
+            if (!category) {
+                category = document.getElementById('category-filter').value;
+            }
+            
+            allProductsContainer.innerHTML = '';
+            
+            const filteredProducts = category === 'all' 
+                ? products 
+                : products.filter(product => product.category === category);
+            
+            filteredProducts.forEach(product => {
+                const productCard = createProductCard(product);
+                allProductsContainer.appendChild(productCard);
+            });
+        }
+
+        // Add product to cart
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    quantity: 1
+                });
+            }
+            
+            updateCart();
+            showCartAddedNotification(product.name);
+        }
+
+        // Show notification when item is added to cart
+        function showCartAddedNotification(productName) {
+            const notification = document.createElement('div');
+            notification.className = 'fixed bottom-4 right-4 bg-green-500 text-white px-4 py-2 rounded-md shadow-lg flex items-center';
+            notification.innerHTML = `
+                <i class="fas fa-check-circle mr-2"></i>
+                <span>${productName} added to cart</span>
+            `;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.classList.add('opacity-0', 'transition-opacity', 'duration-300');
+                setTimeout(() => notification.remove(), 300);
+            }, 2000);
+        }
+
+        // Update cart UI
+        function updateCart() {
+            // Update cart items
+            cartItemsContainer.innerHTML = '';
+            
+            if (cart.length === 0) {
+                cartItemsContainer.innerHTML = `
+                    <div class="text-center text-gray-500 py-10">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>Your cart is empty</p>
+                    </div>
+                `;
+            } else {
+                cart.forEach(item => {
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'flex items-center mb-4 pb-4 border-b';
+                    cartItem.innerHTML = `
+                        <div class="flex-shrink-0 w-16 h-16">
+                            <img src="${item.image}" alt="${item.name}" class="w-full h-full object-cover rounded-md">
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <h3 class="text-sm font-medium">${item.name}</h3>
+                            <p class="text-sm text-gray-500">$${item.price.toFixed(2)}</p>
+                        </div>
+                        <div class="flex items-center">
+                            <button onclick="updateCartItemQuantity(${item.id}, -1)" class="text-gray-500 hover:text-indigo-600 p-1">
+                                <i class="fas fa-minus text-xs"></i>
+                            </button>
+                            <span class="mx-2 text-sm w-6 text-center">${item.quantity}</span>
+                            <button onclick="updateCartItemQuantity(${item.id}, 1)" class="text-gray-500 hover:text-indigo-600 p-1">
+                                <i class="fas fa-plus text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="ml-4">
+                            <span class="text-sm font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+                        </div>
+                        <button onclick="removeFromCart(${item.id})" class="ml-4 text-gray-400 hover:text-red-500">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    `;
+                    cartItemsContainer.appendChild(cartItem);
+                });
+            }
+            
+            // Update cart totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = subtotal > 0 ? 5.00 : 0;
+            const total = subtotal + shipping;
+            
+            cartSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            cartShipping.textContent = `$${shipping.toFixed(2)}`;
+            cartTotal.textContent = `$${total.toFixed(2)}`;
+            
+            // Update cart count
+            updateCartCount();
+        }
+
+        // Update cart item quantity
+        function updateCartItemQuantity(productId, change) {
+            const item = cart.find(item => item.id === productId);
+            
+            if (item) {
+                item.quantity += change;
+                
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    updateCart();
+                }
+            }
+        }
+
+        // Remove item from cart
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateCart();
+        }
+
+        // Update cart count in header
+        function updateCartCount() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = count;
+            
+            if (count === 0) {
+                cartCount.classList.add('hidden');
+            } else {
+                cartCount.classList.remove('hidden');
+            }
+        }
+
+        // Toggle cart sidebar
+        function toggleCart() {
+            cartOpen = !cartOpen;
+            
+            if (cartOpen) {
+                cartSidebar.classList.remove('translate-x-full');
+                cartSidebar.classList.add('translate-x-0');
+                cartOverlay.classList.remove('hidden');
+                document.body.classList.add('overflow-hidden');
+            } else {
+                cartSidebar.classList.remove('translate-x-0');
+                cartSidebar.classList.add('translate-x-full');
+                cartOverlay.classList.add('hidden');
+                document.body.classList.remove('overflow-hidden');
+            }
+        }
+
+        // Toggle mobile menu
+        function toggleMobileMenu() {
+            mobileMenu.classList.toggle('hidden');
+        }
+
+        // Show home page
+        function showHome() {
+            homePage.classList.remove('hidden');
+            productsPage.classList.add('hidden');
+            aboutPage.classList.add('hidden');
+            checkoutPage.classList.add('hidden');
+            orderConfirmation.classList.add('hidden');
+            
+            // Close cart if open
+            if (cartOpen) {
+                toggleCart();
+            }
+            
+            // Close mobile menu if open
+            if (!mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu();
+            }
+        }
+
+        // Show products page
+        function showProducts() {
+            homePage.classList.add('hidden');
+            productsPage.classList.remove('hidden');
+            aboutPage.classList.add('hidden');
+            checkoutPage.classList.add('hidden');
+            orderConfirmation.classList.add('hidden');
+            
+            // Close cart if open
+            if (cartOpen) {
+                toggleCart();
+            }
+            
+            // Close mobile menu if open
+            if (!mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu();
+            }
+        }
+
+        // Show about page
+        function showAbout() {
+            homePage.classList.add('hidden');
+            productsPage.classList.add('hidden');
+            aboutPage.classList.remove('hidden');
+            checkoutPage.classList.add('hidden');
+            orderConfirmation.classList.add('hidden');
+            
+            // Close cart if open
+            if (cartOpen) {
+                toggleCart();
+            }
+            
+            // Close mobile menu if open
+            if (!mobileMenu.classList.contains('hidden')) {
+                toggleMobileMenu();
+            }
+        }
+
+        // Checkout function
+        function checkout() {
+            if (cart.length === 0) {
+                alert('Your cart is empty. Please add some products before checkout.');
+                return;
+            }
+            
+            // Show checkout page
+            homePage.classList.add('hidden');
+            productsPage.classList.add('hidden');
+            aboutPage.classList.add('hidden');
+            checkoutPage.classList.remove('hidden');
+            orderConfirmation.classList.add('hidden');
+            
+            // Close cart
+            if (cartOpen) {
+                toggleCart();
+            }
+            
+            // Load checkout items
+            checkoutItemsContainer.innerHTML = '';
+            
+            cart.forEach(item => {
+                const checkoutItem = document.createElement('div');
+                checkoutItem.className = 'flex justify-between py-2 border-b';
+                checkoutItem.innerHTML = `
+                    <div class="flex items-center">
+                        <span class="text-gray-600 mr-2">${item.quantity}x</span>
+                        <span>${item.name}</span>
+                    </div>
+                    <span class="font-medium">$${(item.price * item.quantity).toFixed(2)}</span>
+                `;
+                checkoutItemsContainer.appendChild(checkoutItem);
+            });
+            
+            // Update checkout totals
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const shipping = 5.00;
+            const total = subtotal + shipping;
+            
+            checkoutSubtotal.textContent = `$${subtotal.toFixed(2)}`;
+            checkoutShipping.textContent = `$${shipping.toFixed(2)}`;
+            checkoutTotal.textContent = `$${total.toFixed(2)}`;
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+        }
+
+        // Select payment method
+        function selectPayment(method) {
+            document.querySelectorAll('.payment-method').forEach(el => {
+                el.classList.remove('border-indigo-500', 'bg-indigo-50');
+            });
+            
+            const selectedMethod = event.currentTarget;
+            selectedMethod.classList.add('border-indigo-500', 'bg-indigo-50');
+            
+            document.querySelectorAll('input[name="payment"]').forEach(radio => {
+                radio.checked = false;
+            });
+            
+            if (method === 'credit') {
+                document.getElementById('credit-card').checked = true;
+            } else if (method === 'paypal') {
+                document.getElementById('paypal').checked = true;
+            } else if (method === 'bank') {
+                document.getElementById('bank-transfer').checked = true;
+            }
+        }
+
+        // Process payment
+        function processPayment() {
+            // Validate form
+            const firstName = document.getElementById('first-name').value;
+            const lastName = document.getElementById('last-name').value;
+            const address = document.getElementById('address').value;
+            const city = document.getElementById('city').value;
+            const state = document.getElementById('state').value;
+            const zip = document.getElementById('zip').value;
+            const email = document.getElementById('email').value;
+            
+            if (!firstName || !lastName || !address || !city || !state || !zip || !email) {
+                alert('Please fill in all shipping information fields.');
+                return;
+            }
+            
+            // Check payment method
+            const paymentMethod = document.querySelector('input[name="payment"]:checked');
+            if (!paymentMethod) {
+                alert('Please select a payment method.');
+                return;
+            }
+            
+            if (paymentMethod.id === 'credit-card') {
+                const cardNumber = document.getElementById('card-number').value;
+                const expDate = document.getElementById('exp-date').value;
+                const cvv = document.getElementById('cvv').value;
+                const cardName = document.getElementById('card-name').value;
+                
+                if (!cardNumber || !expDate || !cvv || !cardName) {
+                    alert('Please fill in all credit card details.');
+                    return;
+                }
+                
+                // Simple credit card number validation
+                if (!/^\d{16}$/.test(cardNumber.replace(/\s/g, ''))) {
+                    alert('Please enter a valid 16-digit credit card number.');
+                    return;
+                }
+                
+                // Simple CVV validation
+                if (!/^\d{3,4}$/.test(cvv)) {
+                    alert('Please enter a valid CVV (3 or 4 digits).');
+                    return;
+                }
+            }
+            
+            // Show loading spinner
+            paymentSpinner.classList.remove('hidden');
+            payButtonText.textContent = 'Processing...';
+            
+            // Simulate payment processing
+            setTimeout(() => {
+                // Hide loading spinner
+                paymentSpinner.classList.add('hidden');
+                payButtonText.textContent = 'Place Order';
+                
+                // Show order confirmation
+                checkoutPage.classList.add('hidden');
+                orderConfirmation.classList.remove('hidden');
+                
+                // Generate random order number
+                orderNumber.textContent = Math.floor(100000 + Math.random() * 900000);
+                confirmationEmail.textContent = email;
+                
+                // Clear cart
+                cart = [];
+                updateCart();
+                updateCartCount();
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

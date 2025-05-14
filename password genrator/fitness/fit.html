@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitTrack - Fitness Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+        
+        .exercise-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .exercise-card {
+            transition: all 0.3s ease;
+        }
+        
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.6s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+        
+        .tab-active {
+            position: relative;
+        }
+        
+        .tab-active::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 3px;
+            bottom: -1px;
+            left: 0;
+            background-color: #4f46e5;
+            border-radius: 3px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        .dark ::-webkit-scrollbar-track {
+            background: #374151;
+        }
+        
+        .dark ::-webkit-scrollbar-thumb {
+            background: #6b7280;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800 transition-colors duration-300 dark:bg-gray-900 dark:text-gray-100">
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm dark:bg-gray-800 fixed w-full z-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 flex items-center">
+                        <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-400 text-xl mr-2"></i>
+                        <span class="text-xl font-bold text-indigo-600 dark:text-indigo-400">FitTrack</span>
+                    </div>
+                    <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+                        <a href="#dashboard" class="nav-link text-gray-900 dark:text-gray-100 px-3 py-2 text-sm font-medium tab-active">Dashboard</a>
+                        <a href="#workouts" class="nav-link text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 px-3 py-2 text-sm font-medium">Workouts</a>
+                        <a href="#exercises" class="nav-link text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 px-3 py-2 text-sm font-medium">Exercises</a>
+                        <a href="#progress" class="nav-link text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 px-3 py-2 text-sm font-medium">Progress</a>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <button id="darkModeToggle" class="dark-mode-toggle p-1 rounded-full focus:outline-none">
+                        <i class="fas fa-moon text-gray-600 dark:text-yellow-300"></i>
+                    </button>
+                    <div class="ml-4 relative">
+                        <button id="userMenuButton" class="flex items-center text-sm rounded-full focus:outline-none">
+                            <span class="sr-only">Open user menu</span>
+                            <div class="h-8 w-8 rounded-full bg-indigo-600 text-white flex items-center justify-center">
+                                <span>U</span>
+                            </div>
+                        </button>
+                    </div>
+                    <div class="-mr-2 flex items-center sm:hidden">
+                        <button id="mobileMenuButton" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none">
+                            <span class="sr-only">Open main menu</span>
+                            <i class="fas fa-bars"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Mobile menu -->
+        <div id="mobileMenu" class="sm:hidden hidden bg-white dark:bg-gray-800 shadow-lg">
+            <div class="px-2 pt-2 pb-3 space-y-1">
+                <a href="#dashboard" class="block px-3 py-2 rounded-md text-base font-medium text-gray-900 dark:text-gray-100 bg-gray-100 dark:bg-gray-700">Dashboard</a>
+                <a href="#workouts" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">Workouts</a>
+                <a href="#exercises" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">Exercises</a>
+                <a href="#progress" class="block px-3 py-2 rounded-md text-base font-medium text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-700">Progress</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="pt-20 pb-8 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="tab-content active">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold mb-2">Welcome back, <span class="text-indigo-600 dark:text-indigo-400">User</span></h1>
+                <p class="text-gray-600 dark:text-gray-300">Track your fitness journey and achieve your goals</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Today's Workout -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" style="animation-delay: 0.1s;">
+                    <div class="flex justify-between items-start mb-4">
+                        <h2 class="text-xl font-semibold">Today's Workout</h2>
+                        <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Active</span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-medium mb-1">Upper Body Strength</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm">5 exercises • 45 minutes</p>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <div class="flex space-x-2">
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">Chest</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">Arms</span>
+                        </div>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">
+                            Start
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Weekly Goal Progress -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" style="animation-delay: 0.2s;">
+                    <h2 class="text-xl font-semibold mb-4">Weekly Goal Progress</h2>
+                    <div class="flex items-center mb-4">
+                        <div class="relative w-16 h-16 mr-4">
+                            <svg class="w-full h-full" viewBox="0 0 36 36">
+                                <path
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#e5e7eb"
+                                    stroke-width="3"
+                                />
+                                <path
+                                    d="M18 2.0845
+                                    a 15.9155 15.9155 0 0 1 0 31.831
+                                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                                    fill="none"
+                                    stroke="#4f46e5"
+                                    stroke-width="3"
+                                    stroke-dasharray="75, 100"
+                                    class="progress-ring__circle"
+                                />
+                            </svg>
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-lg font-bold">3/4</span>
+                            </div>
+                        </div>
+                        <div>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">You've completed</p>
+                            <h3 class="text-xl font-bold">3 workouts</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">this week</p>
+                        </div>
+                    </div>
+                    <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div class="bg-indigo-600 h-2 rounded-full" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" style="animation-delay: 0.3s;">
+                    <h2 class="text-xl font-semibold mb-4">Recent Activity</h2>
+                    <div class="space-y-4">
+                        <div class="flex items-start">
+                            <div class="bg-indigo-100 dark:bg-indigo-900 p-2 rounded-full mr-3">
+                                <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Completed <span class="text-indigo-600 dark:text-indigo-400">Chest Workout</span></p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs">Yesterday, 6:30 PM</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-green-100 dark:bg-green-900 p-2 rounded-full mr-3">
+                                <i class="fas fa-trophy text-green-600 dark:text-green-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">New personal record in <span class="text-indigo-600 dark:text-indigo-400">Bench Press</span></p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs">2 days ago</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <div class="bg-blue-100 dark:bg-blue-900 p-2 rounded-full mr-3">
+                                <i class="fas fa-weight text-blue-600 dark:text-blue-300"></i>
+                            </div>
+                            <div>
+                                <p class="text-sm font-medium">Updated weight to <span class="text-indigo-600 dark:text-indigo-400">165 lbs</span></p>
+                                <p class="text-gray-500 dark:text-gray-400 text-xs">3 days ago</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Workout Stats -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Workout Statistics</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6">
+                    <div class="flex flex-col md:flex-row md:justify-between md:items-center mb-6">
+                        <div>
+                            <h3 class="text-lg font-semibold">Monthly Workout Frequency</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm">Track your consistency over time</p>
+                        </div>
+                        <div class="mt-4 md:mt-0">
+                            <select class="bg-gray-100 dark:bg-gray-700 border-0 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                                <option>Last 7 days</option>
+                                <option selected>Last 30 days</option>
+                                <option>Last 3 months</option>
+                                <option>Last 6 months</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="workoutChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Quick Actions</h2>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md p-4 text-center transition duration-300">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full inline-block mb-2">
+                            <i class="fas fa-plus text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <p class="font-medium">Add Workout</p>
+                    </button>
+                    <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md p-4 text-center transition duration-300">
+                        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-full inline-block mb-2">
+                            <i class="fas fa-weight text-green-600 dark:text-green-300"></i>
+                        </div>
+                        <p class="font-medium">Log Weight</p>
+                    </button>
+                    <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md p-4 text-center transition duration-300">
+                        <div class="bg-blue-100 dark:bg-blue-900 p-3 rounded-full inline-block mb-2">
+                            <i class="fas fa-bullseye text-blue-600 dark:text-blue-300"></i>
+                        </div>
+                        <p class="font-medium">Set Goal</p>
+                    </button>
+                    <button class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-xl shadow-md p-4 text-center transition duration-300">
+                        <div class="bg-purple-100 dark:bg-purple-900 p-3 rounded-full inline-block mb-2">
+                            <i class="fas fa-chart-line text-purple-600 dark:text-purple-300"></i>
+                        </div>
+                        <p class="font-medium">View Progress</p>
+                    </button>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Workouts Section -->
+        <section id="workouts" class="tab-content hidden">
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Workouts</h1>
+                        <p class="text-gray-600 dark:text-gray-300">Manage your workout routines</p>
+                    </div>
+                    <button class="mt-4 md:mt-0 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition duration-300 flex items-center">
+                        <i class="fas fa-plus mr-2"></i> New Workout
+                    </button>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                <!-- Workout Card 1 -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden exercise-card" style="animation-delay: 0.1s;">
+                    <div class="relative h-40 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Upper Body Workout" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-xl font-bold">Upper Body Strength</h3>
+                            <p class="text-sm">5 exercises • 45 minutes</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex space-x-2">
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Chest</span>
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Arms</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="flex justify-between">
+                            <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium flex items-center">
+                                <i class="fas fa-play mr-1"></i> Start
+                            </button>
+                            <button class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-sm font-medium flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 2 -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden exercise-card" style="animation-delay: 0.2s;">
+                    <div class="relative h-40 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8bGVnJTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Leg Workout" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-xl font-bold">Leg Day</h3>
+                            <p class="text-sm">6 exercises • 50 minutes</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex space-x-2">
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Legs</span>
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Glutes</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="flex justify-between">
+                            <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium flex items-center">
+                                <i class="fas fa-play mr-1"></i> Start
+                            </button>
+                            <button class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-sm font-medium flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Workout Card 3 -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden exercise-card" style="animation-delay: 0.3s;">
+                    <div class="relative h-40 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Core Workout" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-xl font-bold">Core Blast</h3>
+                            <p class="text-sm">8 exercises • 30 minutes</p>
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <div class="flex justify-between items-center mb-3">
+                            <div class="flex space-x-2">
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Abs</span>
+                                <span class="bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200 text-xs px-2 py-1 rounded-full">Obliques</span>
+                            </div>
+                            <button class="text-gray-400 hover:text-indigo-600 dark:hover:text-indigo-400">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                        </div>
+                        <div class="flex justify-between">
+                            <button class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-medium flex items-center">
+                                <i class="fas fa-play mr-1"></i> Start
+                            </button>
+                            <button class="text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 text-sm font-medium flex items-center">
+                                <i class="fas fa-info-circle mr-1"></i> Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Add Workout Card -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden border-2 border-dashed border-indigo-400 dark:border-indigo-600 flex flex-col justify-center items-center p-6 text-center cursor-pointer" style="animation-delay: 0.4s;" onclick="openAddWorkoutModal()">
+                    <div class="text-indigo-600 dark:text-indigo-400 text-5xl mb-4">
+                        <i class="fas fa-plus"></i>
+                    </div>
+                    <h3 class="text-lg font-semibold mb-2">Add New Workout</h3>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm">Create a custom workout routine</p>
+                </div>
+            </div>
+            
+            <!-- Recent Workout History -->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Recent Workout History</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Workout</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Duration</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Exercises</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Upper Body Strength</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">Chest, Arms</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-100">Jun 12, 2023</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">6:30 PM</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">45 min</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">5</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">View</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-running text-indigo-600 dark:text-indigo-300"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Cardio Blast</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">Full Body</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-100">Jun 10, 2023</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">7:15 AM</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">30 min</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">4</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">View</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center">
+                                            <div class="flex-shrink-0 h-10 w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
+                                                <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                                            </div>
+                                            <div class="ml-4">
+                                                <div class="text-sm font-medium text-gray-900 dark:text-gray-100">Leg Day</div>
+                                                <div class="text-sm text-gray-500 dark:text-gray-400">Legs, Glutes</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 dark:text-gray-100">Jun 8, 2023</div>
+                                        <div class="text-sm text-gray-500 dark:text-gray-400">5:45 PM</div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">50 min</span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">6</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">View</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Exercises Section -->
+        <section id="exercises" class="tab-content hidden">
+            <div class="mb-8">
+                <div class="flex flex-col md:flex-row md:justify-between md:items-center">
+                    <div>
+                        <h1 class="text-3xl font-bold mb-2">Exercise Library</h1>
+                        <p class="text-gray-600 dark:text-gray-300">Browse and manage your exercises</p>
+                    </div>
+                    <div class="mt-4 md:mt-0 flex space-x-3">
+                        <div class="relative">
+                            <input type="text" placeholder="Search exercises..." class="bg-gray-100 dark:bg-gray-700 border-0 rounded-md pl-10 pr-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-search text-gray-400"></i>
+                            </div>
+                        </div>
+                        <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md font-medium transition duration-300 flex items-center">
+                            <i class="fas fa-plus mr-2"></i> New Exercise
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                <!-- Exercise Category Card -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer" style="animation-delay: 0.1s;">
+                    <div class="relative h-32 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Chest Exercises" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-lg font-bold">Chest</h3>
+                            <p class="text-xs">12 exercises</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Exercise Category Card -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer" style="animation-delay: 0.2s;">
+                    <div class="relative h-32 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1538805060514-97d9cc17730c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NXx8bGVnJTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Leg Exercises" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-lg font-bold">Legs</h3>
+                            <p class="text-xs">15 exercises</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Exercise Category Card -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer" style="animation-delay: 0.3s;">
+                    <div class="relative h-32 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Back Exercises" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-lg font-bold">Back</h3>
+                            <p class="text-xs">10 exercises</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Exercise Category Card -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden cursor-pointer" style="animation-delay: 0.4s;">
+                    <div class="relative h-32 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291dHxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=500&q=60" 
+                             alt="Shoulder Exercises" 
+                             class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent opacity-50"></div>
+                        <div class="absolute bottom-0 left-0 p-4 text-white">
+                            <h3 class="text-lg font-bold">Shoulders</h3>
+                            <p class="text-xs">8 exercises</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Popular Exercises -->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Popular Exercises</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.1s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Bench Press</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Chest • Barbell</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">3 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">8-12 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.2s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Squats</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Legs • Barbell</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">4 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">6-8 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.3s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Deadlift</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Back • Barbell</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">3 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">5 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.4s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Pull-ups</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Back • Bodyweight</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">3 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">8-10 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.5s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Overhead Press</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Shoulders • Barbell</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">3 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">8 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Exercise Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 flex items-start" style="animation-delay: 0.6s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-lg mr-4">
+                            <i class="fas fa-dumbbell text-indigo-600 dark:text-indigo-300"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-semibold mb-1">Lunges</h3>
+                            <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Legs • Dumbbell</p>
+                            <div class="flex space-x-2">
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">3 sets</span>
+                                <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full">10 reps</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- Progress Section -->
+        <section id="progress" class="tab-content hidden">
+            <div class="mb-8">
+                <h1 class="text-3xl font-bold mb-2">Progress Tracking</h1>
+                <p class="text-gray-600 dark:text-gray-300">Visualize your fitness journey and achievements</p>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Weight Progress -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" style="animation-delay: 0.1s;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Weight Progress</h2>
+                        <select class="bg-gray-100 dark:bg-gray-700 border-0 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                            <option>Last 7 days</option>
+                            <option selected>Last 30 days</option>
+                            <option>Last 3 months</option>
+                            <option>Last 6 months</option>
+                        </select>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="weightChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Workout Frequency -->
+                <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6" style="animation-delay: 0.2s;">
+                    <div class="flex justify-between items-center mb-4">
+                        <h2 class="text-xl font-semibold">Workout Frequency</h2>
+                        <select class="bg-gray-100 dark:bg-gray-700 border-0 rounded-md text-sm focus:ring-2 focus:ring-indigo-500">
+                            <option>Last 7 days</option>
+                            <option selected>Last 30 days</option>
+                            <option>Last 3 months</option>
+                            <option>Last 6 months</option>
+                        </select>
+                    </div>
+                    <div class="h-64">
+                        <canvas id="frequencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Personal Records -->
+            <div class="mb-8">
+                <h2 class="text-2xl font-bold mb-4">Personal Records</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- PR Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center" style="animation-delay: 0.1s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full inline-block mb-3">
+                            <i class="fas fa-trophy text-indigo-600 dark:text-indigo-300 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Bench Press</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Chest</p>
+                        <div class="text-2xl font-bold">185 lbs</div>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs">Achieved on Jun 10, 2023</p>
+                    </div>
+                    
+                    <!-- PR Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center" style="animation-delay: 0.2s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full inline-block mb-3">
+                            <i class="fas fa-trophy text-indigo-600 dark:text-indigo-300 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Squat</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Legs</p>
+                        <div class="text-2xl font-bold">245 lbs</div>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs">Achieved on May 28, 2023</p>
+                    </div>
+                    
+                    <!-- PR Card -->
+                    <div class="animate-fade-in bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 text-center" style="animation-delay: 0.3s;">
+                        <div class="bg-indigo-100 dark:bg-indigo-900 p-3 rounded-full inline-block mb-3">
+                            <i class="fas fa-trophy text-indigo-600 dark:text-indigo-300 text-xl"></i>
+                        </div>
+                        <h3 class="font-semibold mb-1">Deadlift</h3>
+                        <p class="text-gray-600 dark:text-gray-300 text-sm mb-2">Back</p>
+                        <div class="text-2xl font-bold">295 lbs</div>
+                        <p class="text-gray-500 dark:text-gray-400 text-xs">Achieved on May 15, 2023</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Body Measurements -->
+            <div>
+                <h2 class="text-2xl font-bold mb-4">Body Measurements</h2>
+                <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md overflow-hidden">
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                            <thead class="bg-gray-50 dark:bg-gray-700">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Date</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Weight</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Body Fat %</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Chest</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Waist</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Arms</th>
+                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">Jun 12, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">165 lbs</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">15%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">42 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">32 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">14.5 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">May 28, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">168 lbs</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">16%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">41.5 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">32.5 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">14.2 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">May 15, 2023</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">170 lbs</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">17%</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">41 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">33 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">14 in</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <a href="#" class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3">Edit</a>
+                                        <a href="#" class="text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100">Delete</a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Add Workout Modal -->
+    <div id="addWorkoutModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md mx-4">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold">Create New Workout</h3>
+                    <button onclick="closeAddWorkoutModal()" class="text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form id="addWorkoutForm">
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workout Name</label>
+                        <input type="text" id="workoutName" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700">
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+                        <textarea id="workoutDescription" rows="2" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700"></textarea>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Categories</label>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Chest</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Back</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Legs</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Arms</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Shoulders</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Abs</span>
+                            <span class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 text-xs px-2 py-1 rounded-full cursor-pointer hover:bg-indigo-100 dark:hover:bg-indigo-900">Cardio</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Workout Image URL</label>
+                        <input type="text" id="workoutImage" class="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-700" placeholder="https://example.com/image.jpg">
+                    </div>
+                    
+                    <div class="flex justify-end space-x-3">
+                        <button type="button" onclick="closeAddWorkoutModal()" class="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700">
+                            Cancel
+                        </button>
+                        <button type="submit" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-md">
+                            Create Workout
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Dark mode toggle
+        const darkModeToggle = document.getElementById('darkModeToggle');
+        const html = document.documentElement;
+        
+        // Check for saved user preference or use OS preference
+        if (localStorage.getItem('darkMode') === 'true' || 
+            (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            html.classList.add('dark');
+            darkModeToggle.innerHTML = '<i class="fas fa-sun text-yellow-300"></i>';
+        }
+        
+        darkModeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            
+            if (html.classList.contains('dark')) {
+                localStorage.setItem('darkMode', 'true');
+                darkModeToggle.innerHTML = '<i class="fas fa-sun text-yellow-300"></i>';
+            } else {
+                localStorage.setItem('darkMode', 'false');
+                darkModeToggle.innerHTML = '<i class="fas fa-moon text-gray-600"></i>';
+            }
+            
+            // Update charts for dark mode
+            updateCharts();
+        });
+        
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobileMenuButton');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Tab navigation
+        const tabs = document.querySelectorAll('.tab-content');
+        const tabLinks = document.querySelectorAll('.nav-link');
+        
+        tabLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetTab = document.querySelector(targetId);
+                
+                // Hide all tabs
+                tabs.forEach(tab => {
+                    tab.classList.add('hidden');
+                    tab.classList.remove('active');
+                });
+                
+                // Show target tab
+                targetTab.classList.remove('hidden');
+                targetTab.classList.add('active');
+                
+                // Update active tab link
+                tabLinks.forEach(tabLink => {
+                    tabLink.classList.remove('tab-active');
+                });
+                
+                this.classList.add('tab-active');
+                
+                // Close mobile menu if open
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+                
+                // Scroll to top of section
+                window.scrollTo({
+                    top: targetTab.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+                
+                // Update charts when switching to progress tab
+                if (targetId === '#progress') {
+                    updateCharts();
+                }
+            });
+        });
+        
+        // Initialize charts
+        let workoutChart, weightChart, frequencyChart;
+        
+        function initCharts() {
+            // Workout Chart
+            const workoutCtx = document.getElementById('workoutChart').getContext('2d');
+            workoutChart = new Chart(workoutCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+                    datasets: [{
+                        label: 'Workouts Completed',
+                        data: [3, 4, 2, 5],
+                        backgroundColor: '#4f46e5',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                stepSize: 1
+                            },
+                            grid: {
+                                color: html.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Weight Chart
+            const weightCtx = document.getElementById('weightChart').getContext('2d');
+            weightChart = new Chart(weightCtx, {
+                type: 'line',
+                data: {
+                    labels: ['May 15', 'May 22', 'May 29', 'Jun 5', 'Jun 12'],
+                    datasets: [{
+                        label: 'Weight (lbs)',
+                        data: [170, 168, 167, 166, 165],
+                        borderColor: '#4f46e5',
+                        backgroundColor: 'rgba(79, 70, 229, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            grid: {
+                                color: html.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                color: html.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+            
+            // Frequency Chart
+            const frequencyCtx = document.getElementById('frequencyChart').getContext('2d');
+            frequencyChart = new Chart(frequencyCtx, {
+                type: 'radar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Workouts',
+                        data: [1, 0, 1, 0, 1, 0, 0],
+                        backgroundColor: 'rgba(79, 70, 229, 0.2)',
+                        borderColor: '#4f46e5',
+                        borderWidth: 2,
+                        pointBackgroundColor: '#4f46e5',
+                        pointRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        r: {
+                            angleLines: {
+                                color: html.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            },
+                            grid: {
+                                color: html.classList.contains('dark') ? '#374151' : '#e5e7eb'
+                            },
+                            suggestedMin: 0,
+                            suggestedMax: 2
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Update charts for dark mode
+        function updateCharts() {
+            const gridColor = html.classList.contains('dark') ? '#374151' : '#e5e7eb';
+            
+            // Update workout chart
+            workoutChart.options.scales.y.grid.color = gridColor;
+            workoutChart.update();
+            
+            // Update weight chart
+            weightChart.options.scales.y.grid.color = gridColor;
+            weightChart.options.scales.x.grid.color = gridColor;
+            weightChart.update();
+            
+            // Update frequency chart
+            frequencyChart.options.scales.r.angleLines.color = gridColor;
+            frequencyChart.options.scales.r.grid.color = gridColor;
+            frequencyChart.update();
+        }
+        
+        // Add Workout Modal
+        function openAddWorkoutModal() {
+            document.getElementById('addWorkoutModal').classList.remove('hidden');
+        }
+        
+        function closeAddWorkoutModal() {
+            document.getElementById('addWorkoutModal').classList.add('hidden');
+        }
+        
+        // Add Workout Form Submission
+        const addWorkoutForm = document.getElementById('addWorkoutForm');
+        
+        addWorkoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('workoutName').value;
+            const description = document.getElementById('workoutDescription').value;
+         const imageUrl = document.getElementById('workoutImage').value || 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8dXBwZXIlMjBib2R5JTIwd29ya291d
+</script
+         </html>

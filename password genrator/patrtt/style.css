@@ -1,0 +1,34 @@
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+.product-card {
+    transition: all 0.3s ease;
+}
+.cart-item-enter {
+    opacity: 0;
+    transform: translateX(-20px);
+}
+.cart-item-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 300ms ease-in;
+}
+.cart-item-exit {
+    opacity: 1;
+}
+.cart-item-exit-active {
+    opacity: 0;
+    transform: translateX(20px);
+    transition: all 300ms ease-out;
+}
+.payment-method:hover {
+    background-color: #f8fafc;
+}
+.loading-spinner {
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
